@@ -8,6 +8,8 @@ main: prison\Prison
 permissions:
  prison.*:
   default: false
-  child:
+  description: "Allows all Prison features"
+  children:
    prison.rankup:
+    description: "Allows player to rankup"
     default: true

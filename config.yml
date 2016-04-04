@@ -1,0 +1,23 @@
+---
+# ===================================================================================
+# Plugin made by Primus :)
+#
+# Twitter (@PrimusLV)
+# PocketMine Forums (http://forums.pocketmine.net/members/primus.25050/)
+# Github (https://github.com/PrimusLV)
+# Fork this project on Github (https://github.com/PrimusLV/Prison)
+# ===================================================================================
+#
+# If you have more than one economy plugin, which one should I pick?
+preferred-economy: EconomyAPI
+# Prefix for messages
+prefix: "§8[§aPrison§8]§f"
+# Should I broadcast a message if player ranks up?
+broadcast-on-rankup: true
+
+# List them in order.
+groups:
+ PRISONER-A: 500
+ PRISONER-B: 1200
+ PRISONER-C: 3000
+...

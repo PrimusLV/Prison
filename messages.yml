@@ -1,0 +1,8 @@
+---
+not_prison_group: '%prefix Your rank is not prison rank.'
+ranked_up: '%prefix You ranked up to %var1. You paid: %var2'
+ranked_up_broadcast: '%prefix %var1 ranked up to %var2 and paid: %var3'
+not_enough_money: '%prefix You don''t have enough money to rankup. You need %var1
+  but you have %var2'
+highest_rank: '%prefix You already have the highest rank!'
+...

@@ -1,8 +1,8 @@
 # Prison
 Prison management system with rank-up feature, PurePerms and economy support for PocketMine-MP (MCPE Server Software).
 
-> Plugin for new PocketMine-MP API 2.0.0
-> No support for older versions of PocketMine
+> Plugin is for new PocketMine-MP API 2.0.0
+> and doesn't support an older versions of PocketMine
 
 ### Features
 - [x] Rankup

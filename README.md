@@ -5,10 +5,10 @@ Prison management system with rank-up feature, PurePerms and economy support for
 > No support for older versions of PocketMine
 
 ### Features
-[X] Rankup
-[X] Supports four economy plugins (EconomyAPI, MassiveEconomy, PocketMoney, GoldStd)
-[X] Supports PurePerms
-[ ] Guards
-[ ] Rank up signs
-[ ] Special events
+- [x] Rankup
+- [x] Supports four economy plugins (EconomyAPI, MassiveEconomy, PocketMoney, GoldStd)
+- [x] Supports PurePerms
+- [ ] Guards
+- [ ] Rank up signs
+- [ ] Special events
 

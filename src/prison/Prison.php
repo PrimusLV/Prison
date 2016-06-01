@@ -75,6 +75,12 @@ class Prison extends PluginBase {
     $this->getLogger()->info("---------------------");
 
     $this->library = new Library($this, $this->getConfig()->get('prefix'));
+    
+    // Register events
+    $this->getServer()->getPluginManager()->registerEvents(new PlayerEventListener($this), $this);
+    
+    // Load signs
+    # TODO: Load all saved signs. json.
 
 	$this->registerCommands();  
   }

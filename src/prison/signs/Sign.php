@@ -45,16 +45,27 @@ class Sign {
   
   // Load
   public static function loadSign(array $data) : bool {
-    # TODO
+    if(!isset($data["pos"]) or !isset($data["type"])) throw new \InvalidArgumentException("Invalid sign data");
+    // Load position from string
+    $p = explode(":", $data["pos"]);
+    $level = Server::getInstance()->getLevelByName($p["3"]);
+    if(!$level instanceof Level) throw new \InvalidArgumentException("Sign's level is invalid");
+    $pos = new Position($p[0], $p[1], $p[2], $level);
+    if(self::get($pos) instanceof Sign) throw new \InvalidArgumentException("Sign in given position has been already created");
+    $sign = new Sign($pos, $data["type"]);
+    return self::$signs->contains($sign);
   }
   public static function deleteSign(Sign $sign){
-    # TODO
+    self::$signs->remove($sign);
   }
   
   
   public function getPosition() : Position { return this->position; }
   public function getLevel() : Level { return this->pos->level; }
   public function getType() : int { return $this->type; }
+  
+  public function setActive($bool = true){ $this->active = $bool; }
+  public function active() : bool { return $this->active === true; }
   
 }
 

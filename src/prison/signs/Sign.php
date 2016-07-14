@@ -34,12 +34,12 @@ class Sign {
   }
   
   public static function get(Position $pos){
-     foreach($this->signs as $s){ if($s->getPosition() === $pos) return $s; }
+     foreach(self::$signs as $s){ if($s->getPosition() === $pos) return $s; }
      return null;
   }
   public static function getAll() : array {
     $s=[];
-    foreach($this->signs as $sg){ $s[] = $sg; }
+    foreach(self::$signs as $sg){ $s[] = $sg; }
     return $s;
   }
   
@@ -53,10 +53,11 @@ class Sign {
     $pos = new Position($p[0], $p[1], $p[2], $level);
     if(self::get($pos) instanceof Sign) throw new \InvalidArgumentException("Sign in given position has been already created");
     $sign = new Sign($pos, $data["type"]);
+    self::$sign->attach($sign);
     return self::$signs->contains($sign);
   }
   public static function deleteSign(Sign $sign){
-    self::$signs->remove($sign);
+    self::$signs->detach($sign);
   }
   
   

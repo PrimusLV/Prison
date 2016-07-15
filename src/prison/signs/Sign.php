@@ -33,6 +33,10 @@ class Sign {
     this->signs->add($this);
   }
   
+  /**
+   * Quick reminder for myself: This could not work because identical check won't work on diffrent position instances altough
+   *    components are the same.
+   */
   public static function get(Position $pos){
      foreach(self::$signs as $s){ if($s->getPosition() === $pos) return $s; }
      return null;

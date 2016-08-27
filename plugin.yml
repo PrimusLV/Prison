@@ -5,7 +5,9 @@ version: 1.0.0
 api: [1.12.0, 1.13.0, 2.0.0]
 main: prison\Prison
 depend: PurePerms
-soft-depend: [EconomyAPI, MassiveEconomy, PocketMoney, GoldStd]
+softdepend: [EconomyAPI, MassiveEconomy, PocketMoney, GoldStd]
+loadbefore: [EconomyAPI, MassiveEconomy, PocketMoney, GoldStd]
+load: POSTWORLD
 
 permissions:
  prison.*:

@@ -9,6 +9,7 @@ use pocketmine\Player;
 use prison\economy\Economy;
 use prison\command\RankUp;
 use prison\messages\Library;
+use prison\event\listener\PlayerEventListener;
 
 use _64FF00\PurePerms\PurePerms;
 use _64FF00\PurePerms\PPGroup;

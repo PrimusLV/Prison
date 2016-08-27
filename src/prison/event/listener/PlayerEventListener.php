@@ -2,7 +2,7 @@
 namespace prison\event\listener;
 
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerEventListener;
+use pocketmine\event\player\PlayerInteractEvent;
 
 use prison\Prison;
 
@@ -21,5 +21,5 @@ class PlayerEventListener implements Listener {
   
   
   
-  protected function getPlugin() : Prison { return $this->plugin; } #Useless
+  protected function getPlugin() : Prison { return $this->owner; } #Useless
 }

@@ -70,9 +70,7 @@ class Prison extends PluginBase {
     }
 
     $this->getLogger()->info("--- Loaded Groups ---");
-    foreach($this->groups as $i => $g){
-    	$this->getLogger()->info($i.". ".$g['group']->getName()." : ".Text::GOLD.$economy->formatMoney($g['price']));
-    }
+    foreach($this->groups as $i => $g) $this->getLogger()->info($i.". ".$g['group']->getName()." : ".Text::GOLD.$economy->formatMoney($g['price']));
     $this->getLogger()->info("---------------------");
 
     $this->library = new Library($this, $this->getConfig()->get('prefix'));
@@ -81,12 +79,32 @@ class Prison extends PluginBase {
     $this->getServer()->getPluginManager()->registerEvents(new PlayerEventListener($this), $this);
     
     // Load signs
+    $signs = (new Config($this->getDataFolder() . "signs.json", Config::JSON, []))->getAll(); // I'm not going to use this object anymore
+    if(!empty($signs))
+    {
+    	foreach($signs as $sign) {
+    		if(($level = $this->getServer()->getLevelByName($sign["level"])) instanceof Level) {
+    			$this->signs[] = new Sign(new Position((int) $sign["x"], (int) $sign["y"], (int) $sign["z"], $level), (int) $sign["type"]);
+    		}
+    	}
+    	$this->getLogger()->info("Loaded {count($this->signs} signs");
+    }
     # TODO: Load all saved signs. json.
 
 	$this->registerCommands();  
   }
 
   public function onDisable(){
+  	$signs = [];
+  	foreach($this->signs as $sign) {
+  		$signs[] = [
+  			"x" => $sign->getX();
+  			"y" => $sign->getY();
+  			"z" => $sign->getZ();
+  			"level" => $sign->getLevel();
+  			];
+  	}
+  	(new Config($this->getDataFolder() . "signs.json", Config::JSON, $signs))->save();
   	$this->getLogger()->info("Disabled!");
   }
 
@@ -179,7 +197,8 @@ class Prison extends PluginBase {
   	}
   	return $r;
   }
-
+	
+	
   public function getLibrary() : Library {
   	return $this->library;
   }

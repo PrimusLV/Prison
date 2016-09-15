@@ -87,18 +87,16 @@ class Prison extends PluginBase {
     	}
     	$this->getLogger()->info("Loaded {count(Sign::getAll()} signs");
     }
-    # TODO: Load all saved signs. json.
-
-	$this->registerCommands();  
+		$this->registerCommands();  
   }
 
   public function onDisable(){
+  	Sign::saveAll();
   	$this->getLogger()->info("Disabled!");
   }
 
   public function registerCommands(){
-  	$map = $this->getServer()->getCommandMap();
-  	$map->register("Prison", new RankUp($this, 'rankup', 'Rank-up to new rank', '/rankup', ['ru', 'ranku', 'rup']));
+  	 $this->getServer()->getCommandMap()->register("Prison", new RankUp($this, 'rankup', 'Rank-up to new rank', '/rankup', ['ru', 'ranku', 'rup']));
   }
 
   /**
@@ -114,10 +112,7 @@ class Prison extends PluginBase {
    * @return bool
    */
   public function isPrisonGroup(PPGroup $group){
-  	foreach($this->groups as $g){
-  		if($g['group'] === $group) return true;
-  	}
-  	return false;
+  	return array_search($group, $this->groups, true) !== false;
   }
 
   /**
@@ -134,10 +129,9 @@ class Prison extends PluginBase {
    */
   public function rankup(Player $player){
   	$g = $this->getPlayerGroup($player);
-		if($this->isPrisonGroup($g) === false){
-			$player->sendMessage($this->library->getMessage("not_prison_group"));
-			return false;
-		}
+	if(!$this->isPrisonGroup($g){
+		$player->sendMessage($this->library->getMessage("not_prison_group"));
+	} else {
 		$ng = $this->getNextGroup($g);
 		if($ng instanceof PPGroup){
 			$pmoney = $this->economy->getMoney($player);
@@ -149,12 +143,12 @@ class Prison extends PluginBase {
 				return true;
 			} else {
 				$player->sendMessage($this->library->getMessage('not_enough_money', $this->economy->formatMoney($price), $this->economy->formatMoney($pmoney)));
-				return false;
 			}
 		} else {
 			$player->sendMessage($this->library->getMessage('highest_rank'));
-			return false;
 		}
+	}
+	return false;
   }
 
   /**
@@ -162,10 +156,8 @@ class Prison extends PluginBase {
    * @return int
    */
   public function getGroupPrice(PPGroup $group){
-  	foreach($this->groups as $i => $g){
-  		if($g['group'] === $group) return $g['price'];
-  	}
-  	return 0;
+  	if(($c = array_search($group, $this->groups, true)) === false) return 0;
+  	return $this->groups[$c]["price"];
   }
 
   /**
@@ -173,19 +165,11 @@ class Prison extends PluginBase {
    * @return PPGroup|Null
    */
   public function getNextGroup(PPGroup $group){
-  	$r = null;
-  	foreach($this->groups as $i => $g){
-  		if($g['group'] === $group){
-  			if(isset($this->groups[$i + 1])){
-  				$r = $this->groups[$i + 1]['group'];
-  				break;
-  			}
-  		} 
-  		continue;
-  	}
-  	return $r;
+  	if(isset($this->groups[($c = array_search($group, $this->groups, true)) + 1]))
+  		return $this->groups[$c + 1]['group'];
+  	else
+  		return null;
   }
-	
 	
   public function getLibrary() : Library {
   	return $this->library;

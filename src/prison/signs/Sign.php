@@ -8,7 +8,7 @@ use pocketmine\level\Position;
 /**
  * Support for prison signs
  */
-class Sign {
+class Sign extends Position {
 
   // Types
   const RANKUP = 0;
@@ -28,33 +28,52 @@ class Sign {
   protected $active = false;
   
   public function __construct(Position $pos, $type){
+    parent::__construct($pos);
+    $this->type = $type;
+    $this->setActive();
     # TODO
     // Check if we are trying to load a real sign (in level)
-    this->signs->add($this);
   }
   
   /**
    * Quick reminder for myself: This could not work because identical check won't work on diffrent position instances altough
    *    components are the same.
+   * @return Sign|null
    */
   public static function get(Position $pos){
-     foreach(self::$signs as $s){ if($s->getPosition() === $pos) return $s; }
+     foreach(self::$signs as $s){ if($s->getFloorX() === $pos->getFloorX() && $s->getFloorY() === $pos->getFloorY() && $s->getFloorZ() === $pos->getFloorZ()) return $s; }
      return null;
   }
+  
+  /**
+   * @return Sign[]
+   */
   public static function getAll() : array {
     $s=[];
     foreach(self::$signs as $sg){ $s[] = $sg; }
     return $s;
   }
   
+  public static function saveAll() {
+    $signs = [];
+  	foreach($this->signs as $sign) {
+  		$signs[] = [
+  			"x" => $sign->getX();
+  			"y" => $sign->getY();
+  			"z" => $sign->getZ();
+  			"level" => $sign->getLevel();
+  			];
+  	}
+  	(new Config($this->getDataFolder() . "signs.json", Config::JSON, $signs))->save();
+  }
+  
   // Load
   public static function loadSign(array $data) : bool {
-    if(!isset($data["pos"]) or !isset($data["type"])) throw new \InvalidArgumentException("Invalid sign data");
+    if(!isset($data["type"])) throw new \InvalidArgumentException("Invalid sign data");
     // Load position from string
-    $p = explode(":", $data["pos"]);
-    $level = Server::getInstance()->getLevelByName($p["3"]);
+    $level = Server::getInstance()->getLevelByName($data["level"]);
     if(!$level instanceof Level) throw new \InvalidArgumentException("Sign's level is invalid");
-    $pos = new Position($p[0], $p[1], $p[2], $level);
+    $pos = new Position($data["x"], $data["y"], $data["z"], $level);
     if(self::get($pos) instanceof Sign) throw new \InvalidArgumentException("Sign in given position has been already created");
     $sign = new Sign($pos, $data["type"]);
     self::$sign->attach($sign);
@@ -71,6 +90,22 @@ class Sign {
   
   public function setActive($bool = true){ $this->active = $bool; }
   public function active() : bool { return $this->active === true; }
+  
+  public function onTap(Player $player) {
+    switch($this->type) {
+      case self::RANKUP:
+        break;
+      case self::BUY:
+        break;
+      case self::RANKDOWN:
+        break;
+      case self::INFO:
+        break;
+      default:
+        // Invalid sign?
+        break;
+    }
+  }
   
 }
 

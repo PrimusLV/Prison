@@ -83,11 +83,9 @@ class Prison extends PluginBase {
     if(!empty($signs))
     {
     	foreach($signs as $sign) {
-    		if(($level = $this->getServer()->getLevelByName($sign["level"])) instanceof Level) {
-    			$this->signs[] = new Sign(new Position((int) $sign["x"], (int) $sign["y"], (int) $sign["z"], $level), (int) $sign["type"]);
-    		}
+    		Sign::loadSign($sign);
     	}
-    	$this->getLogger()->info("Loaded {count($this->signs} signs");
+    	$this->getLogger()->info("Loaded {count(Sign::getAll()} signs");
     }
     # TODO: Load all saved signs. json.
 
@@ -95,16 +93,6 @@ class Prison extends PluginBase {
   }
 
   public function onDisable(){
-  	$signs = [];
-  	foreach($this->signs as $sign) {
-  		$signs[] = [
-  			"x" => $sign->getX();
-  			"y" => $sign->getY();
-  			"z" => $sign->getZ();
-  			"level" => $sign->getLevel();
-  			];
-  	}
-  	(new Config($this->getDataFolder() . "signs.json", Config::JSON, $signs))->save();
   	$this->getLogger()->info("Disabled!");
   }
 

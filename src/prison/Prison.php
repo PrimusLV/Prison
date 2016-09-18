@@ -129,7 +129,7 @@ class Prison extends PluginBase {
    */
   public function rankup(Player $player){
   	$g = $this->getPlayerGroup($player);
-	if(!$this->isPrisonGroup($g){
+	if(!$this->isPrisonGroup($g)){
 		$player->sendMessage($this->library->getMessage("not_prison_group"));
 	} else {
 		$ng = $this->getNextGroup($g);

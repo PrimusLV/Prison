@@ -31,6 +31,7 @@ class Prison extends PluginBase {
   
   public function onEnable(){
     $this->getLogger()->info("Loading...");
+    Sign::init();
     @mkdir($this->getDataFolder());
 
     $this->saveDefaultConfig();
@@ -59,7 +60,7 @@ class Prison extends PluginBase {
 
     // Load groups which this plugin will use as ranks
     $groups = $this->getConfig()->get('groups');
-    $i = 1;
+    $i = 0;
     foreach($groups as $group => $price){
     	if($ppgroup = $purePerms->getGroup($group)){
     		$this->groups[$i] = [
@@ -73,7 +74,7 @@ class Prison extends PluginBase {
     }
 
     $this->getLogger()->info("--- Loaded Groups ---");
-    foreach($this->groups as $i => $g) $this->getLogger()->info($i.". ".$g['group']->getName()." : ".Text::GOLD.$economy->formatMoney($g['price']));
+    foreach($this->groups as $i => $g) $this->getLogger()->info(($i + 1).". ".$g['group']->getName()." : ".Text::GOLD.$economy->formatMoney($g['price']));
     $this->getLogger()->info("---------------------");
 
     $this->library = new Library($this, $this->getConfig()->get('prefix'));
@@ -95,7 +96,16 @@ class Prison extends PluginBase {
   }
 
   public function onDisable(){
-  	Sign::saveAll();
+    $signs = [];
+    foreach(Sign::getAll() as $sign) {
+      $signs[] = [
+        "x" => $sign->getX(),
+        "y" => $sign->getY(),
+        "z" => $sign->getZ(),
+        "level" => $sign->getLevel()
+        ];
+    }
+    (new Config($this->getDataFolder() . "signs.json", Config::JSON, $signs))->save();
   	$this->getLogger()->info("Disabled!");
   }
 
@@ -115,8 +125,17 @@ class Prison extends PluginBase {
    * @param PPGroup $group
    * @return bool
    */
-  public function isPrisonGroup(PPGroup $group){
-  	return array_search($group, $this->groups, true) !== false;
+  public function isPrisonGroup(PPGroup $group) : bool {
+  	foreach($this->groups as $groupData) {
+      if($groupData["group"] === $group) return true;
+    }
+    return false;
+  }
+
+  public function getGroupData(PPGroup $group) : array {
+    foreach($this->groups as $groupData) {
+      if($groupData["group"] === $group) return $groupData;
+    }
   }
 
   /**
@@ -139,11 +158,11 @@ class Prison extends PluginBase {
       $ng = $this->getNextGroup($g);
       if($ng instanceof PPGroup){
       	$pmoney = $this->economy->getMoney($player);
-      	if($pmoney >= $price = $this->getGroupPrice($ng)){
+      	if($pmoney >= ($price = $this->getGroupPrice($ng))){
       		$this->economy->takeMoney($player, $price);
       		$this->setPlayerGroup($player, $ng);
       		$player->sendMessage($this->library->getMessage('ranked_up', $ng->getName(), $this->economy->formatMoney($price)));
-      		if($this->getConfig()->get('broadcast-on-rankup')) $this->getServer()->broadcastMessage($this->library->getMessage('ranked_up_broadcast', $player->getName(), $this->economy->formatMoney($price)));
+      		if($this->getConfig()->get('broadcast-on-rankup')) $this->getServer()->broadcastMessage($this->library->getMessage('ranked_up_broadcast', $player->getName(), $ng->getName(), $this->economy->formatMoney($price)));
       		return true;
       	} else {
       		$player->sendMessage($this->library->getMessage('not_enough_money', $this->economy->formatMoney($price), $this->economy->formatMoney($pmoney)));
@@ -160,19 +179,21 @@ class Prison extends PluginBase {
    * @return int
    */
   public function getGroupPrice(PPGroup $group) : int {
-  	if(($c = array_search($group, $this->groups, true)) === false) return 0;
-  	return $this->groups[$c]["price"];
+  	$gp = $this->getGroupData($group);
+    return $gp["price"] ?? 0;
   }
 
   /**
    * @param PPGroup $group
    * @return PPGroup|Null
    */
-  public function getNextGroup(PPGroup $group) : int {
-  	if(isset($this->groups[($c = array_search($group, $this->groups, true)) + 1]))
-  		return $this->groups[$c + 1]['group'];
-  	else
-  		return null;
+  public function getNextGroup(PPGroup $group) {
+  	$n = false;
+    foreach($this->groups as $d) {
+      if($n) return $d["group"];
+      if($d["group"] === $group) $n = true;
+    }
+    return null;
   }
 
   /**

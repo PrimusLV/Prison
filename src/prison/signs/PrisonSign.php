@@ -25,6 +25,11 @@ class PrisonSign extends Position {
 
   /** @var boolean $active */
   protected $active = false;
+
+  public static function init() {
+    if(self::$signs) return;
+    self::$signs = new \SplObjectStorage;
+  }
   
   public function __construct(Position $pos, $type){
     parent::__construct($pos);
@@ -52,19 +57,6 @@ class PrisonSign extends Position {
     $s=[];
     foreach(self::$signs as $sg){ $s[] = $sg; }
     return $s;
-  }
-  
-  public static function saveAll() {
-    $signs = [];
-  	foreach($this->signs as $sign) {
-  		$signs[] = [
-  			"x" => $sign->getX(),
-  			"y" => $sign->getY(),
-  			"z" => $sign->getZ(),
-  			"level" => $sign->getLevel()
-  			];
-  	}
-  	(new Config($this->getDataFolder() . "signs.json", Config::JSON, $signs))->save();
   }
   
   // Load

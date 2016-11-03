@@ -4,11 +4,12 @@ namespace prison\signs;
 use pocketmine\block\Sign;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
+use pocketmine\utils\Config;
 
 /**
  * Support for prison signs
  */
-class Sign extends Position {
+class PrisonSign extends Position {
 
   // Types
   const RANKUP = 0;
@@ -21,18 +22,13 @@ class Sign extends Position {
   
   /** @var int $type */
   protected $type;
-  /** @var Position $position */
-  protected $position;
-  //protected $perm;
+
   /** @var boolean $active */
   protected $active = false;
   
   public function __construct(Position $pos, $type){
     parent::__construct($pos);
     $this->type = $type;
-    $this->setActive();
-    # TODO
-    // Check if we are trying to load a real sign (in level)
   }
   
   /**
@@ -41,8 +37,12 @@ class Sign extends Position {
    * @return Sign|null
    */
   public static function get(Position $pos){
-     foreach(self::$signs as $s){ if($s->getFloorX() === $pos->getFloorX() && $s->getFloorY() === $pos->getFloorY() && $s->getFloorZ() === $pos->getFloorZ()) return $s; }
-     return null;
+     foreach(self::$signs as $s){ 
+      if($s->getFloorX() === $pos->getFloorX() && $s->getFloorY() === $pos->getFloorY() && $s->getFloorZ() === $pos->getFloorZ()){
+        return $s;
+      }  
+    }
+    return null;
   }
   
   /**
@@ -58,10 +58,10 @@ class Sign extends Position {
     $signs = [];
   	foreach($this->signs as $sign) {
   		$signs[] = [
-  			"x" => $sign->getX();
-  			"y" => $sign->getY();
-  			"z" => $sign->getZ();
-  			"level" => $sign->getLevel();
+  			"x" => $sign->getX(),
+  			"y" => $sign->getY(),
+  			"z" => $sign->getZ(),
+  			"level" => $sign->getLevel()
   			];
   	}
   	(new Config($this->getDataFolder() . "signs.json", Config::JSON, $signs))->save();
@@ -73,25 +73,29 @@ class Sign extends Position {
     // Load position from string
     $level = Server::getInstance()->getLevelByName($data["level"]);
     if(!$level instanceof Level) throw new \InvalidArgumentException("Sign's level is invalid");
-    $pos = new Position($data["x"], $data["y"], $data["z"], $level);
+    $pos = new Position((int) $data["x"], (int) $data["y"], (int) $data["z"], $level);
     if(self::get($pos) instanceof Sign) throw new \InvalidArgumentException("Sign in given position has been already created");
     $sign = new Sign($pos, $data["type"]);
+    $block = $pos->getLevel()->getBlock($pos);
+    if(!($block instanceof Sign)) throw new \RuntimeException("sign has to be attached to real sign");
     self::$sign->attach($sign);
     return self::$signs->contains($sign);
   }
+
   public static function deleteSign(Sign $sign){
     self::$signs->detach($sign);
   }
   
   
-  public function getPosition() : Position { return this->position; }
-  public function getLevel() : Level { return this->pos->level; }
+  public function getPosition() : Position { return $this->position; }
+  public function getLevel() : Level { return $this->pos->level; }
   public function getType() : int { return $this->type; }
   
   public function setActive($bool = true){ $this->active = $bool; }
   public function active() : bool { return $this->active === true; }
   
   public function onTap(Player $player) {
+    if(!$this->active()) return;
     switch($this->type) {
       case self::RANKUP:
         break;
@@ -103,6 +107,7 @@ class Sign extends Position {
         break;
       default:
         // Invalid sign?
+        self::deleteSign($this);
         break;
     }
   }

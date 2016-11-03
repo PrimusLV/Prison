@@ -4,12 +4,15 @@ namespace prison;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat as Text;
+use pocketmine\utils\Config;
 use pocketmine\Player;
 
 use prison\economy\Economy;
 use prison\command\RankUp;
 use prison\messages\Library;
 use prison\event\listener\PlayerEventListener;
+use prison\event\listener\SignController;
+use prison\signs\PrisonSign as Sign;
 
 use _64FF00\PurePerms\PurePerms;
 use _64FF00\PurePerms\PPGroup;
@@ -77,6 +80,7 @@ class Prison extends PluginBase {
     
     // Register events
     $this->getServer()->getPluginManager()->registerEvents(new PlayerEventListener($this), $this);
+    $this->getServer()->getPluginManager()->registerEvents(new SignController($this), $this);
     
     // Load signs
     $signs = (new Config($this->getDataFolder() . "signs.json", Config::JSON, []))->getAll(); // I'm not going to use this object anymore
@@ -128,34 +132,34 @@ class Prison extends PluginBase {
    * @return bool
    */
   public function rankup(Player $player){
-  	$g = $this->getPlayerGroup($player);
-	if(!$this->isPrisonGroup($g)){
-		$player->sendMessage($this->library->getMessage("not_prison_group"));
-	} else {
-		$ng = $this->getNextGroup($g);
-		if($ng instanceof PPGroup){
-			$pmoney = $this->economy->getMoney($player);
-			if($pmoney >= $price = $this->getGroupPrice($ng)){
-				$this->economy->takeMoney($player, $price);
-				$this->setPlayerGroup($player, $ng);
-				$player->sendMessage($this->library->getMessage('ranked_up', $ng->getName(), $this->economy->formatMoney($price)));
-				if($this->getConfig()->get('broadcast-on-rankup')) $this->getServer()->broadcastMessage($this->library->getMessage('ranked_up_broadcast', $player->getName(), $this->economy->formatMoney($price)));
-				return true;
-			} else {
-				$player->sendMessage($this->library->getMessage('not_enough_money', $this->economy->formatMoney($price), $this->economy->formatMoney($pmoney)));
-			}
-		} else {
-			$player->sendMessage($this->library->getMessage('highest_rank'));
-		}
-	}
-	return false;
+    $g = $this->getPlayerGroup($player);
+    if(!$this->isPrisonGroup($g)){
+      $player->sendMessage($this->library->getMessage("not_prison_group"));
+    } else {
+      $ng = $this->getNextGroup($g);
+      if($ng instanceof PPGroup){
+      	$pmoney = $this->economy->getMoney($player);
+      	if($pmoney >= $price = $this->getGroupPrice($ng)){
+      		$this->economy->takeMoney($player, $price);
+      		$this->setPlayerGroup($player, $ng);
+      		$player->sendMessage($this->library->getMessage('ranked_up', $ng->getName(), $this->economy->formatMoney($price)));
+      		if($this->getConfig()->get('broadcast-on-rankup')) $this->getServer()->broadcastMessage($this->library->getMessage('ranked_up_broadcast', $player->getName(), $this->economy->formatMoney($price)));
+      		return true;
+      	} else {
+      		$player->sendMessage($this->library->getMessage('not_enough_money', $this->economy->formatMoney($price), $this->economy->formatMoney($pmoney)));
+      	}
+      } else {
+      	$player->sendMessage($this->library->getMessage('highest_rank'));
+      }
+    }
+    return false;
   }
 
   /**
    * @param PPGroup $group
    * @return int
    */
-  public function getGroupPrice(PPGroup $group){
+  public function getGroupPrice(PPGroup $group) : int {
   	if(($c = array_search($group, $this->groups, true)) === false) return 0;
   	return $this->groups[$c]["price"];
   }
@@ -164,11 +168,22 @@ class Prison extends PluginBase {
    * @param PPGroup $group
    * @return PPGroup|Null
    */
-  public function getNextGroup(PPGroup $group){
+  public function getNextGroup(PPGroup $group) : int {
   	if(isset($this->groups[($c = array_search($group, $this->groups, true)) + 1]))
   		return $this->groups[$c + 1]['group'];
   	else
   		return null;
+  }
+
+  /**
+   * @param PPGroup $group
+   * @return PPGroup|null
+   */
+  public function getPreviousGroup(PPGroup $group) {
+    if(isset($this->groups[($c = array_search($group, $this->groups, true)) - 1]))
+      return $this->groups[$c - 1]['group'];
+    else
+      return null;
   }
 	
   public function getLibrary() : Library {
